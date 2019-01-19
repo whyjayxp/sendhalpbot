@@ -1,1 +1,1 @@
-worker: python Parrot.py
+worker: python ParrotBot.py
