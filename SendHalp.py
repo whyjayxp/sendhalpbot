@@ -48,22 +48,29 @@ def main():
                         requests.post(url + "sendMessage", json = message_out)
 
                     elif args[0] == "/remove":
-                        # not working
-                        reply = " ".join(args[1:])
-                        for i in range(1, reps + 1):
-                            options = {
-                                "inline_keyboard":
-                                    [[{"text": "1", "callback_data": "1"}, {"text": "2", "callback_data": "2"},
-                                      {"text": "3", "callback_data": "3"}, {"text": "4", "callback_data": "4"},
-                                      {"text": "5", "callback_data": "5"}],
-
-                                     [{"text": "Okay", "callback_data": "what"}]]}
-                            message_out = {"chat_id": chat_id, "text": reply, "parse_mode": "HTML", "reply_markup": options}
-                            requests.post(url + "sendMessage", json = message_out)
+                        user_id = message['message']['from']['id']
+                        if len(chat_qns) < int(args[1]):
+                            text = "No such question to be removed! Please try again with another index!"
+                        elif user_id != chat_qns[int(args[1])]['user_id']:
+                            text = "Sorry, you are not allowed to remove this question!"
+                        else:
+                            del chat_qns[int(args[1])]
+                            text = "Question " + args[1] + " has been removed!"
+                        message_out = {"chat_id": chat_id, "text": text}
+                        requests.post(url + "sendMessage", json = message_out)
 
                     elif args[0] == "/resolve":
-                        continue
-
+                        user_id = message['message']['from']['id']
+                        if len(chat_qns) < int(args[1]):
+                            text = "No such question to be resolved! Please try again with another index!"
+                        elif user_id != chat_qns[int(args[1])]['user_id']:
+                            text = "Sorry, you are not allowed to resolve this question!"
+                        else:
+                            del chat_qns[int(args[1])]
+                            text = "Question " + args[1] + " has been resolved! Congratulationssss"
+                        message_out = {"chat_id": chat_id,"text": text}
+                        requests.post(url + "sendMessage", json = message_out)
+                        
                     elif args[0] == "/answer":
                         continue
 
