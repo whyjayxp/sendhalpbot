@@ -1,5 +1,6 @@
 import requests
 import json
+import random
 
 token = "722519073:AAGz5JXntidyedz1xhxBCaL4k9XxogGx_Tg"
 url = "https://api.telegram.org/bot" + token + "/"
@@ -15,6 +16,7 @@ def generateList(qns):
     return text
 
 def main():
+    rdm = random.randint(1, 10)
     questions = {}
     # questions is a dictionary with chat_id keys. Each key has an array (list) of
     # 5 qn dictionary, that contains a question string, user_id and an array (list)
@@ -160,7 +162,12 @@ def main():
                             requests.post(url + "sendMessage", json = message_out)
 
                     elif args[0] == "/ping":
-                        message_out = {"chat_id": chat_id, "text": "pong"}
+                        if rdm == 0:
+                            rdm = random.randint(1, 10)
+                            message_out = {"chat_id": chat_id, "text": "BANG BANG BANG"}
+                        else:
+                            rdm = rdm - 1
+                            message_out = {"chat_id": chat_id, "text": "pong"}
                         requests.post(url + "sendMessage", json = message_out)
 
                     elif args[0] == "/ask":
