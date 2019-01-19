@@ -1,6 +1,5 @@
 altgraph==0.10.2
 bdist-mpkg==0.5.0
-bonjour-py==0.3
 certifi==2018.11.29
 chardet==3.0.4
 docopt==0.6.2
