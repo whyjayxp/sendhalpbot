@@ -14,7 +14,7 @@ def generateList(qns):
         text += "[" + str(len(qn['answer'])) + " Ans]"
         count = count + 1
     return text
-
+ 
 def main():
     rdm = random.randint(1, 10)
     questions = {}
