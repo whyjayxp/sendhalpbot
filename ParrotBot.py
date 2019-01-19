@@ -2,7 +2,7 @@ import requests
 token = "722519073:AAGz5JXntidyedz1xhxBCaL4k9XxogGx_Tg"
 url = "https://api.telegram.org/bot" + token + "/"
 reps = 1
-
+ 
 while True:
     result = requests.get(url + "getUpdates?offset=610416985&timeout=1").json()['result']
     if len(result) == 0:
