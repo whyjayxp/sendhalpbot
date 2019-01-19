@@ -40,9 +40,9 @@ def main():
                             message_out = {"chat_id": chat_id, "text": text}
                         else:
                             text = generateList(chat_qns)
-                            buttons = [{"text": "1", "callback_data": "1"}]
+                            buttons = [{"text": "1", "callback_data": "ans 1"}]
                             for i in range(2, len(chat_qns) + 1):
-                                buttons.append({"text": str(i), "callback_data": str(i)})
+                                buttons.append({"text": str(i), "callback_data": "ans " + str(i)})
                             options = {"inline_keyboard": [buttons]}
                             message_out = {"chat_id": chat_id, "text": text, "parse_mode": "HTML", "reply_markup": options}
                         requests.post(url + "sendMessage", json = message_out)
@@ -51,10 +51,10 @@ def main():
                         user_id = message['message']['from']['id']
                         if len(chat_qns) < int(args[1]):
                             text = "No such question to be removed! Please try again with another index!"
-                        elif user_id != chat_qns[int(args[1])]['user_id']:
+                        elif user_id != chat_qns[int(args[1]) - 1]['user_id']:
                             text = "Sorry, you are not allowed to remove this question!"
                         else:
-                            del chat_qns[int(args[1])]
+                            del chat_qns[int(args[1]) - 1]
                             text = "Question " + args[1] + " has been removed!"
                         message_out = {"chat_id": chat_id, "text": text}
                         requests.post(url + "sendMessage", json = message_out)
@@ -63,16 +63,39 @@ def main():
                         user_id = message['message']['from']['id']
                         if len(chat_qns) < int(args[1]):
                             text = "No such question to be resolved! Please try again with another index!"
-                        elif user_id != chat_qns[int(args[1])]['user_id']:
+                        elif user_id != chat_qns[int(args[1]) - 1]['user_id']:
                             text = "Sorry, you are not allowed to resolve this question!"
                         else:
-                            del chat_qns[int(args[1])]
-                            text = "Question " + args[1] + " has been resolved! Congratulationssss"
-                        message_out = {"chat_id": chat_id,"text": text}
+                            qn = chat_qns[int(args[1]) - 1]
+                            text = "<b>Question: " + qn['question'] + "</b>"
+                            for ans in qn['answer']:
+                                text += "\n\n" + ans
+                            del chat_qns[int(args[1]) - 1]
+                        message_out = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
                         requests.post(url + "sendMessage", json = message_out)
-                        
-                    elif args[0] == "/answer":
+
+                    elif args[0] == "/help":
                         continue
+
+                    elif args[0] == "/answer":
+                        qn_num = int(args[1]) # TODO: test for non-integer input
+                        if qn_num <= 0 or qn_num > len(chat_qns): # out of range
+                            text = "Invalid question number. Please try again!"
+                            message_out = {"chat_id": chat_id, "text": text}
+                            requests.post(url + "sendMessage", json = message_out)
+                        elif len(args) == 2:
+                            text = "Please write an answer!"
+                            message_out = {"chat_id": chat_id, "text": text}
+                            requests.post(url + "sendMessage", json = message_out)
+                        else:
+                            newAns = " ".join(args[2:])
+                            qn = chat_qns[qn_num - 1]
+                            qn['answer'].append(newAns)
+                            text = "<b>Question: " + qn['question'] + "</b>"
+                            for ans in qn['answer']:
+                                text += "\n\n" + ans
+                            message_out = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
+                            requests.post(url + "sendMessage", json = message_out)
 
                     elif args[0] == "/ping":
                         message_out = {"chat_id": chat_id, "text": "pong"}
@@ -91,29 +114,39 @@ def main():
                             newQn = " ".join(args[1:])
                             user_id = message['message']['from']['id']
                             chat_qns.append({"question": newQn, "answer": [], "user_id": user_id})
-                            # x = []
-                            #for question in questions:
-                            #    x.append([{"text": question, "callback_data": "you finally work!!!"}])
-                            #options = {
-                            #    "inline_keyboard": x
-                            #}
                             text = generateList(chat_qns)
-                            buttons = [{"text": "1", "callback_data": "1"}]
+                            buttons = [{"text": "1", "callback_data": "ans 1"}]
                             for i in range(2, len(chat_qns) + 1):
-                                buttons.append({"text": str(i), "callback_data": str(i)})
+                                buttons.append({"text": str(i), "callback_data": "ans " + str(i)})
                             options = {"inline_keyboard": [buttons]}
                             message_out = {"chat_id": chat_id, "text": text, "parse_mode": "HTML", "reply_markup": options}
                             requests.post(url + "sendMessage", json = message_out)
 
             elif 'callback_query' in message:
-                callback_id = message['callback_query']['id']
                 # print("Callback by " + callback_id)
-                message_out = {"callback_query_id": callback_id,
-                               "text": message['callback_query']['data']}
-                requests.post(url + "answerCallbackQuery", json = message_out)
+                callback_id = message['callback_query']['id']
+                data = message['callback_query']['data']
+                args = data.split(" ")
+                if args[0] == "ans": # show answers to a selected question
+                    origin_msg = message['callback_query']['message']
+                    chat_id = origin_msg['chat']['id']
+                    chat_qns = questions[chat_id]
+                    list_index = int(args[1]) - 1
+                    if len(chat_qns) > list_index: # valid index
+                        qn = chat_qns[int(args[1]) - 1]
+                        text = "<b>Question: " + qn['question'] + "</b>"
+                        for ans in qn['answer']:
+                            text += "\n\n" + ans
+                    else:
+                        text = "Invalid question! Please try again."
+
+                    pop_out = {"callback_query_id": callback_id}
+                    message_out = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
+                    requests.post(url + "answerCallbackQuery", json = pop_out)
+                    requests.post(url + "sendMessage", json = message_out)
 
             offset = str(message['update_id'] + 1)
-            result = requests.get(url + "getUpdates?offset=" + offset + "&timeout=1").json()['result']
+            result = requests.get(url + "getUpdates?offset=" + offset + "&timeout=1").json()
 
 if __name__ == "__main__":
     main()
