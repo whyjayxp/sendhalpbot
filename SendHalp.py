@@ -78,7 +78,7 @@ def main():
 
                     elif args[0] == "/help":
                         ask = "Type /ask (question) here. Eg: /ask Where shall we go for lunch today?"
-                        answer = "Type /answer (answer) here. Eg: /answer Hawker Centre"
+                        answer = "Type /answer (index) here. Eg: /answer Hawker Centre"
                         list = "Type /list to display all the questions. Eg: /list"
                         remove = "Type /remove (index). Eg: /remove 2 - removes 2nd question in list"
                         resolve = "Type /resolve (index). Eg: /resolve 2 - removes 2nd question in list, prints out list afterwards"
@@ -88,10 +88,10 @@ def main():
                                        + "\n" + resolve + "\n" + sendhelp}
                         requests.post(url + "sendMessage", json=message_out)
 
-                    elif args[0] == "/sendhelp":
-                        helpMessage = "Please help! :("
+                    elif args[0] == "/sendhalp":
+                        helpMessage = "Please halp! :("
                         start = 1
-                        end = 3
+                        end = args[1]
                         message_out = {"chat_id": chat_id, "text": helpMessage}
                         deletelater = []
                         for i in range(start, end):
