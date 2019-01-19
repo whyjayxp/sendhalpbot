@@ -50,35 +50,53 @@ def main():
                         requests.post(url + "sendMessage", json = message_out)
 
                     elif args[0] == "/remove":
+                        if len(args) == 1:
+                            text = "Please choose a question number!"
+                            message_out = {"chat_id": chat_id, "text": text}
+                            requests.post(url + "sendMessage", json = message_out)
+                            continue
+                        try: # test for non-integer input
+                            qn_num = int(args[1])
+                        except ValueError:
+                            qn_num = 0
                         user_id = message['message']['from']['id']
-                        if len(chat_qns) < int(args[1]):
+                        if qn_num <= 0 or len(chat_qns) < qn_num:
                             text = "No such question to be removed! Please try again with another index!"
-                        elif user_id != chat_qns[int(args[1]) - 1]['user_id']:
+                        elif user_id != chat_qns[qn_num - 1]['user_id']:
                             text = "Sorry, you are not allowed to remove this question!"
                         else:
-                            del chat_qns[int(args[1]) - 1]
+                            del chat_qns[qn_num - 1]
                             text = "Question " + args[1] + " has been removed!"
                         message_out = {"chat_id": chat_id, "text": text}
                         requests.post(url + "sendMessage", json = message_out)
 
                     elif args[0] == "/resolve":
+                        if len(args) == 1:
+                            text = "Please choose a question number!"
+                            message_out = {"chat_id": chat_id, "text": text}
+                            requests.post(url + "sendMessage", json = message_out)
+                            continue
+                        try: # test for non-integer input
+                            qn_num = int(args[1])
+                        except ValueError:
+                            qn_num = 0
                         user_id = message['message']['from']['id']
-                        if len(chat_qns) < int(args[1]):
+                        if qn_num <= 0 or len(chat_qns) < qn_num:
                             text = "No such question to be resolved! Please try again with another index!"
-                        elif user_id != chat_qns[int(args[1]) - 1]['user_id']:
+                        elif user_id != chat_qns[qn_num - 1]['user_id']:
                             text = "Sorry, you are not allowed to resolve this question!"
                         else:
-                            qn = chat_qns[int(args[1]) - 1]
-                            text = "<b>Question: " + qn['question'] + "</b>"
+                            qn = chat_qns[qn_num - 1]
+                            text = "<b>Question by " + qn['question'] + "</b>"
                             for ans in qn['answer']:
                                 text += "\n\n" + ans
-                            del chat_qns[int(args[1]) - 1]
+                            del chat_qns[qn_num - 1]
                         message_out = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
                         requests.post(url + "sendMessage", json = message_out)
 
                     elif args[0] == "/help":
                         ask = "Type /ask (question) here. Eg: /ask Where shall we go for lunch today?"
-                        answer = "Type /answer (answer) here. Eg: /answer Hawker Centre"
+                        answer = "Type /answer (index) (answer) here. Eg: /answer 1 Hawker Centre"
                         list = "Type /list to display all the questions. Eg: /list"
                         remove = "Type /remove (index). Eg: /remove 2 - removes 2nd question in list"
                         resolve = "Type /resolve (index). Eg: /resolve 2 - removes 2nd question in list, prints out list afterwards"
@@ -89,9 +107,18 @@ def main():
                         requests.post(url + "sendMessage", json=message_out)
 
                     elif args[0] == "/sendhelp":
-                        helpMessage = "Please help! :("
+                        if len(args) == 1:
+                            counts = 5
+                        else:
+                            try: # test for non-integer input
+                                counts = int(args[1])
+                                if counts > 10:
+                                    counts = 10
+                            except ValueError:
+                                counts = 5
+                        helpMessage = "Please help x " + str(counts) + "! :("
                         start = 1
-                        end = 3
+                        end = counts + 1
                         message_out = {"chat_id": chat_id, "text": helpMessage}
                         deletelater = []
                         for i in range(start, end):
@@ -104,7 +131,15 @@ def main():
                                 deletelater[i]))
 
                     elif args[0] == "/answer":
-                        qn_num = int(args[1]) # TODO: test for non-integer input
+                        if len(args) == 1:
+                            text = "Please write an answer!"
+                            message_out = {"chat_id": chat_id, "text": text}
+                            requests.post(url + "sendMessage", json = message_out)
+                            continue
+                        try: # test for non-integer input
+                            qn_num = int(args[1])
+                        except ValueError:
+                            qn_num = 0
                         if qn_num <= 0 or qn_num > len(chat_qns): # out of range
                             text = "Invalid question number. Please try again!"
                             message_out = {"chat_id": chat_id, "text": text}
@@ -116,8 +151,9 @@ def main():
                         else:
                             newAns = " ".join(args[2:])
                             qn = chat_qns[qn_num - 1]
-                            qn['answer'].append(newAns)
-                            text = "<b>Question: " + qn['question'] + "</b>"
+                            user_name = message['message']['from']['first_name']
+                            qn['answer'].append(user_name + ": " + newAns)
+                            text = "<b>Question by " + qn['question'] + "</b>"
                             for ans in qn['answer']:
                                 text += "\n\n" + ans
                             message_out = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
@@ -129,7 +165,7 @@ def main():
 
                     elif args[0] == "/ask":
                         if len(chat_qns) >= MAX_QNS:
-                            text = "The maximum questions we can store is " + MAX_QNS + ". Please /remove or /resolve the existing questions first."
+                            text = "The maximum questions we can store is " + str(MAX_QNS) + ". Please /remove or /resolve the existing questions first."
                             message_out = {"chat_id": chat_id, "text": text}
                             requests.post(url + "sendMessage", json = message_out)
                         elif len(args) == 1:
@@ -137,7 +173,7 @@ def main():
                             message_out = {"chat_id": chat_id, "text": text}
                             requests.post(url + "sendMessage", json = message_out)
                         else:
-                            newQn = " ".join(args[1:])
+                            newQn = message['message']['from']['first_name'] + ": " + " ".join(args[1:])
                             user_id = message['message']['from']['id']
                             chat_qns.append({"question": newQn, "answer": [], "user_id": user_id})
                             text = generateList(chat_qns)
@@ -160,7 +196,7 @@ def main():
                     list_index = int(args[1]) - 1
                     if len(chat_qns) > list_index: # valid index
                         qn = chat_qns[int(args[1]) - 1]
-                        text = "<b>Question: " + qn['question'] + "</b>"
+                        text = "<b>Question by " + qn['question'] + "</b>"
                         for ans in qn['answer']:
                             text += "\n\n" + ans
                     else:
