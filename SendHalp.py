@@ -84,14 +84,23 @@ def main():
                         list = "Type /list to display all the questions. Eg: /list"
                         remove = "Type /remove (index). Eg: /remove 2 - removes 2nd question in list"
                         resolve = "Type /resolve (index). Eg: /resolve 2 - removes 2nd question in list, prints out list afterwards"
-                        sendhelp = "Type /sendhelp - cleans up the spam it creates afterwards"
+                        sendhelp = "Type /sendhalp (number) - cleans up the spam it creates afterwards"
 
                         message_out = {"chat_id": chat_id, "text": ask + "\n" + answer + "\n" + list + "\n" +remove
                                        + "\n" + resolve + "\n" + sendhelp}
                         requests.post(url + "sendMessage", json=message_out)
 
                     elif args[0] == "/sendhalp":
-                        helpMessage = "Please halp! :("
+                        if len(args) == 1:
+                            counts = 5
+                        else:
+                            try: # test for non-integer input
+                                counts = int(args[1])
+                                if counts > 10:
+                                    counts = 10
+                            except ValueError:
+                                counts = 5
+                        helpMessage = "Please help x " + str(counts) + "! :("
                         start = 1
                         end = args[1]
                         message_out = {"chat_id": chat_id, "text": helpMessage}
