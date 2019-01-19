@@ -102,7 +102,7 @@ def main():
                                 counts = 5
                         helpMessage = "Please help x " + str(counts) + "! :("
                         start = 1
-                        end = args[1]
+                        end = counts + 1
                         message_out = {"chat_id": chat_id, "text": helpMessage}
                         deletelater = []
                         for i in range(start, end):
