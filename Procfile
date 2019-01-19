@@ -1,1 +1,1 @@
-worker: python ParrotBot.py
+worker: python SendHalp.py
