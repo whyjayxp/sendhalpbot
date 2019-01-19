@@ -1,4 +1,6 @@
 import requests
+import json
+
 token = "722519073:AAGz5JXntidyedz1xhxBCaL4k9XxogGx_Tg"
 url = "https://api.telegram.org/bot" + token + "/"
 MAX_QNS = 5
@@ -75,7 +77,31 @@ def main():
                         requests.post(url + "sendMessage", json = message_out)
 
                     elif args[0] == "/help":
-                        continue
+                        ask = "Type /ask (question) here. Eg: /ask Where shall we go for lunch today?"
+                        answer = "Type /answer (answer) here. Eg: /answer Hawker Centre"
+                        list = "Type /list to display all the questions. Eg: /list"
+                        remove = "Type /remove (index). Eg: /remove 2 - removes 2nd question in list"
+                        resolve = "Type /resolve (index). Eg: /resolve 2 - removes 2nd question in list, prints out list afterwards"
+                        sendhelp = "Type /sendhelp - cleans up the spam it creates afterwards"
+
+                        message_out = {"chat_id": chat_id, "text": ask + "\n" + answer + "\n" + list + "\n" +remove
+                                       + "\n" + resolve + "\n" + sendhelp}
+                        requests.post(url + "sendMessage", json=message_out)
+
+                    elif args[0] == "/sendhelp":
+                        helpMessage = "Please help! :("
+                        start = 1
+                        end = 3
+                        message_out = {"chat_id": chat_id, "text": helpMessage}
+                        deletelater = []
+                        for i in range(start, end):
+                            posted = requests.post(url + "sendMessage", json=message_out).content
+                            parsed = json.loads(posted)
+                            deletelater.append(parsed['result']['message_id'])
+                            print(deletelater)
+                        for i in range(start - 1, end - 1):
+                            requests.post(url + "deleteMessage?" + "chat_id=" + str(chat_id) + "&message_id=" + str(
+                                deletelater[i]))
 
                     elif args[0] == "/answer":
                         qn_num = int(args[1]) # TODO: test for non-integer input
